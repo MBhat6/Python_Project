@@ -1,0 +1,216 @@
+{% extends "city_template.html" %}
+{% block content %}
+<div class = "conatiner" style="{a style_func () a}" ng-app="myApp" ng-controller="myCtrl" >
+
+<div class="row">
+  <div class="col-sm-2">
+
+    <div class="mini-submenu">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+    </div>
+    <form action = "" method = "post"  role="form">
+    <div class="form-group" id = "Intrest" name = "intrests" ng-click="toggleSibling($event)">
+        <span href="#" class="list-group-item active">
+          Menu
+            <span class="pull-right" id="slide-submenu">
+                <i class="fa fa-times"></i>
+            </span>
+        </span>
+        <a href="#" class="list-group-item" id ="events">
+            <i class="fa fa-comment-o"></i> Events
+        </a>
+        <a href="#" class="list-group-item" id ="Places">
+            <i class="fa fa-search"></i>Places to visit
+        </a>
+        <a href="#" class="list-group-item" id ="Hotels">
+            <i class="fa fa-user"></i> Hotels
+        </a>
+        <a href="#" class="list-group-item" id = "resturants">
+            <i class="fa fa-folder-open-o"></i> Resturants
+        </a><br>
+
+    </div>
+
+    </form>
+
+
+
+
+
+</div>
+
+<div class="col-sm-10">
+  <h3> {{city_value['City_name']}} </h3><br>
+  <p class = "describe"> <b>{{city_value['City_details']}} </b></p><br><br>
+
+
+  </div>
+
+
+  <div class="col-sm-2 " ng-show=  select_value >
+
+     <label for="sel1" ng-show = select_value>Sort By (select one):</label>
+      <select class="form-control" id="sel1" ng-show = select_value ng-model="selectedName" ng-options="x for x in names">
+
+      </select>
+      <h3> {a selectedName a}</h3>
+
+</div>
+
+<div class="col-sm-3 " ng-show= filter_value>
+
+   <label for="sel1" ng-show = filter_value> Filter Cuisine  By (select one):</label>
+    <select class="form-control" id="sel1" ng-show = filter_value ng-model="filters.value" ng-options="x for x in filters.values">
+
+    </select>
+    <h3> {a FilterName a}</h3>
+
+</div>
+
+</div>
+
+
+
+      <div class = "row">
+      <div class = "col-sm-6 col-sm-offset-2" id = "display" >
+        <div class="panel panel-primary" id ="panel" ng-repeat ="x in even | orderBy : selectedName | filter :filters.value " >
+          <div class="panel-heading" id="mytext"><span ng-bind-html= x.Name ></span> </div>
+          <div class="panel-body" id ="value"><span ng-bind-html= x.Date ></span> </div>
+          <div class="panel-body" id ="value">{a x.Popular a} </div>
+          <div class="panel-body" id ="value">{a x.Type a} </div>
+
+          <div class="panel-footer" id ="attribute"><span ng-bind-html= x.Address></span></div><br>
+          </div>
+        </div>
+
+
+</div>
+<div class = "row">
+  <div class = "col-sm-8 col-sm-offset-2">
+    <h3 ng-hide = select_value> Top News Feed</h3>
+
+
+
+    <ul class="nav nav-pills nav-stacked" ng-repeat = "stuff in {{ news}} " ng-hide = select_value>
+
+    <li class = "news"><a href="#">{a stuff a}</a></li>
+
+    </ul>
+</div>
+</div>
+
+
+
+</div>
+<script>
+var app = angular.module("myApp", ['ngSanitize']);
+app.config(['$interpolateProvider', function($interpolateProvider) {
+  $interpolateProvider.startSymbol('{a');
+  $interpolateProvider.endSymbol('a}');
+}]);
+
+app.controller("myCtrl", function($scope, $rootScope) {
+  $scope.newsdetails = '{{news_feed}}'
+
+  $scope.toggleSibling = function($event){
+
+    console.log($event.target.id);
+    if ($event.target.id == "events"){
+      $scope.select_value = true;
+      $scope.filters = {"value":" "};
+      $rootScope.filter_value = false ;
+      $scope.even = [];
+
+      $scope.names = ["Date", "-Popular"];
+
+
+
+      {%for events in (city_value['City_events']).values() %}
+        $scope.even.push({'Name':'{{events[0]}}', 'Date':'{{events[1]}}','Popular':'{{events[2]}}','Address':'{{events[3]}}'} ); // Gets the event name
+      {% endfor %}
+
+
+
+    console.log($scope.even);
+
+
+  }
+  if ($event.target.id == "Places"){
+    $scope.even = [];
+    $scope.names = ["-Popular"];
+    $scope.select_value = true;
+    $scope.filters = {"value":" "};
+    $rootScope.filter_value = false ;
+    {%for events in (city_value['City_places']).values() %}
+      $scope.even.push({'Name':'{{events[0]}}', 'Popular':'{{events[1]}}','Date':'{{events[2]}}','Address':'{{events[3]}}'} ); // Gets the event name
+    {% endfor %}
+  console.log($scope.even);
+
+}
+if ($event.target.id == "Hotels"){
+  $scope.even = [];
+  $scope.names = ["-Popular","-Type"];
+  $scope.select_value = true;
+  $scope.filters = {"value":" "};
+  $rootScope.filter_value = false ;
+  {%for events in (city_value['City_hotels']).values()%}
+$scope.even.push({'Name':'{{events[0]}}', 'Popular':'{{events[1]}}','Type':'{{events[2]}}','Address':'{{events[3]}}'} );
+{% endfor %}
+
+}
+if ($event.target.id == "resturants"){
+$scope.even = [];
+$scope.names = ["-Popular","Type"];
+$scope.filters = {
+                  "value":"American",
+                  "values": ["American", "Indian", "Chinese", "Italian","Thai"]}
+$scope.select_value = true;
+$rootScope.filter_value = true;
+
+
+{%for events in (city_value['City_resturants']).values()%}
+  $scope.even.push({'Name':'{{events[0]}}', 'Popular':'{{events[1]}}','Type':'{{events[2]}}','Address':'{{events[3]}}'} );
+{% endfor %}
+
+
+}
+}
+
+$scope.style_func = function(){
+  {% if city_value['City_name'] == 'San Francisco'%}
+    var style1 = "background-image: url(../static/gg.jpg); background-size: cover;";
+    return style1;
+  {%endif %}
+  {% if city_value['City_name'] == 'San Jose'%}
+    var style1 = "background-image: url(../static/sj.jpg); background-size: cover;";
+    return style1;
+  {%endif %}
+  {% if city_value['City_name'] == 'San Diego'%}
+    var style1 = "background-image: url(../static/sd.jpg); background-size: cover;";
+    return style1;
+  {%endif %}
+  {% if city_value['City_name'] == 'Los Angeles'%}
+    var style1 = "background-image: url(../static/la.jpg); background-size: cover;";
+    return style1;
+  {%endif %}
+
+}
+});
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}
